@@ -157,8 +157,8 @@ function drawFeaturePoints(canvas, img, face) {
 
     // DONE: Draw feature point, e.g. as a circle using ctx.arc()
     // See: https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/arc
-    var x = featurePoint['x'];
-    var y = featurePoint['y'];
+    var x = featurePoint.x;
+    var y = featurePoint.y;
     var r = 3; //radius
 
     ctx.beginPath();
@@ -230,11 +230,12 @@ function Game(unicodeEmojis) {
   };
 
   this.target = function() {
-    if (this.index < this.unicodeEmojis.length) {
-      return this.unicodeEmojis[this.index];
-    } else {
-      return 9989; // ✅ - game is over
+
+    if (this.isOver()) {
+      return 9989; // ✅
     }
+
+    return this.unicodeEmojis[this.index];
   }
 
   this.score = function() {
