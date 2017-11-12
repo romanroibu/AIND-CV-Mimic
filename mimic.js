@@ -73,8 +73,8 @@ function onReset() {
   $('#results').html("");  // clear out results
   $("#logs").html("");  // clear out previous log
 
-  // TODO(optional): You can restart the game as well
-  // <your code here>
+  // DONE(optional): You can restart the game as well
+  resetGame();
 };
 
 // Add a callback to notify when camera access is allowed
@@ -101,8 +101,8 @@ detector.addEventListener("onInitializeSuccess", function() {
   $("#face_video_canvas").css("display", "block");
   $("#face_video").css("display", "none");
 
-  // TODO(optional): Call a function to initialize the game, if needed
-  // <your code here>
+  // DONE(optional): Call a function to initialize the game, if needed
+  resetGame();
 });
 
 // Add a callback to receive the results from processing an image
@@ -132,8 +132,10 @@ detector.addEventListener("onImageResultsSuccess", function(faces, image, timest
     drawFeaturePoints(canvas, image, faces[0]);
     drawEmoji(canvas, image, faces[0]);
 
-    // TODO: Call your function to run the game (define it first!)
-    // <your code here>
+    // DONE: Call your function to run the game (define it first!)
+    if (game.move(faces[0].emojis.dominantEmoji)) {
+      updateGameUI();
+    }
   }
 });
 
@@ -185,7 +187,7 @@ function drawEmoji(canvas, img, face) {
   ctx.fillText(emoji, x, y);
 }
 
-// TODO: Define any variables and functions to implement the Mimic Me! game mechanics
+// DONE: Define any variables and functions to implement the Mimic Me! game mechanics
 
 // NOTE:
 // - Remember to call your update function from the "onImageResultsSuccess" event handler above
@@ -198,4 +200,67 @@ function drawEmoji(canvas, img, face) {
 // - Define an initialization/reset function, and call it from the "onInitializeSuccess" event handler above
 // - Define a game reset function (same as init?), and call it from the onReset() function above
 
-// <your code here>
+//https://css-tricks.com/snippets/javascript/shuffle-array/#article-header-id-2
+Array.prototype.shuffle = function() {
+  this.sort(function() { return 0.5 - Math.random() });
+};
+
+function Game(unicodeEmojis) {
+
+  this.unicodeEmojis = unicodeEmojis;
+
+  this.reset = function() {
+    this.unicodeEmojis.shuffle()
+    this.index = 0;
+  };
+
+  this.move = function(emoji) {
+
+    if (this.isOver()) {
+      return false;
+    }
+
+    var isMatch = toUnicode(emoji) == this.target()
+
+    if (isMatch) {
+      this.index += 1;
+    }
+
+    return isMatch;
+  };
+
+  this.target = function() {
+    if (this.index < this.unicodeEmojis.length) {
+      return this.unicodeEmojis[this.index];
+    } else {
+      return 9989; // ✅ - game is over
+    }
+  }
+
+  this.score = function() {
+    return this.index;
+  }
+
+  this.total = function() {
+    return this.unicodeEmojis.length;
+  }
+
+  this.isOver = function() {
+    return this.unicodeEmojis.length <= this.index;
+  };
+
+  this.reset();
+}
+
+var game = new Game(emojis);
+
+function resetGame() {
+  game.reset();
+  updateGameUI();
+}
+
+function updateGameUI() {
+  setTargetEmoji(game.target());
+  setScore(game.score(), game.total());
+}
+
